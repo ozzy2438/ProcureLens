@@ -1,0 +1,101 @@
+[
+  {
+    "id": "cpr-2025-value-for-money",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 12,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "4. Value for money",
+    "content": "Value for money is the core procurement rule. Assessment is not limited to price: officials consider quality, fitness for purpose, supplier experience and ethical conduct, flexibility, sustainability and whole-of-life costs.",
+    "tags": ["value for money", "evaluation", "whole of life cost", "supplier experience"]
+  },
+  {
+    "id": "cpr-2025-australian-business",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 15,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "5. Encouraging competition",
+    "content": "For non-panel procurements from 10,000 dollars up to the applicable threshold, non-corporate Commonwealth entities generally invite Australian businesses. The basis for deciding that this is inappropriate must be documented.",
+    "tags": ["Australian business", "competition", "below threshold", "documentation"]
+  },
+  {
+    "id": "cpr-2025-sme",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 16,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "5. Small and Medium Enterprises",
+    "content": "Officials should avoid procurement practices that unfairly discriminate against SMEs and consider barriers to entry, SME capability and opportunities to disaggregate large projects where appropriate.",
+    "tags": ["SME", "small business", "barriers", "competition", "bid"]
+  },
+  {
+    "id": "cpr-2025-reporting",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 20,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "7. Reporting arrangements",
+    "content": "Reportable contracts must be published on AusTender within 42 days. Amendments must also be reported within 42 days when the threshold is crossed or the reported value changes by at least 10,000 dollars, including accumulated unreported changes.",
+    "tags": ["AusTender", "reporting", "amendment", "42 days", "threshold"]
+  },
+  {
+    "id": "cpr-2025-risk",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 22,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "8. Procurement risk",
+    "content": "Relevant entities establish processes to identify, analyse, allocate and treat procurement risk. The effort applied should be proportionate to the scale, scope and risk of the procurement.",
+    "tags": ["risk", "risk treatment", "proportionate", "governance"]
+  },
+  {
+    "id": "cpr-2025-thresholds",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 23,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "9. Procurement thresholds and methods",
+    "content": "The non-construction threshold is 125,000 dollars for non-corporate Commonwealth entities and 400,000 dollars for prescribed corporate entities; construction uses 7.5 million dollars. Above-threshold limited tender is restricted to CPR paragraph 10.3 conditions or an exemption.",
+    "tags": ["threshold", "open tender", "limited tender", "procurement method"]
+  },
+  {
+    "id": "cpr-2025-limited-tender",
+    "document": "Commonwealth Procurement Rules — 17 November 2025",
+    "page": 25,
+    "url": "https://www.finance.gov.au/sites/default/files/2025-10/Commonwealth-Procurement-Rules-2025.pdf",
+    "section": "10. Conditions for limited tender",
+    "content": "Above-threshold limited tender is allowed only in specified circumstances such as an unsuccessful open approach, genuine unforeseen extreme urgency, or absence of competition for technical or exclusive-rights reasons. A written report must record the justification and value-for-money basis.",
+    "tags": ["limited tender", "extreme urgency", "sole source", "records", "value for money"]
+  },
+  {
+    "id": "anao-mhr-variation-risk",
+    "document": "ANAO Report No. 36 2023–24 — Procurement of My Health Record",
+    "page": 8,
+    "url": "https://www.anao.gov.au/sites/default/files/2024-06/Auditor-General_Report_2023-24_36.pdf",
+    "section": "Summary and recommendations",
+    "content": "ANAO found contract variations were made with insufficient assessment of risk, materiality and value for money, and that available contract-performance levers were not fully used.",
+    "tags": ["ANAO", "contract variation", "amendment risk", "materiality", "performance"]
+  },
+  {
+    "id": "anao-mhr-planning",
+    "document": "ANAO Report No. 36 2023–24 — Procurement of My Health Record",
+    "page": 14,
+    "url": "https://www.anao.gov.au/sites/default/files/2024-06/Auditor-General_Report_2023-24_36.pdf",
+    "section": "Key messages for Australian Government entities",
+    "content": "Entities should plan sufficiently before contract expiry to allow a compliant procurement. Poor or late planning is not an appropriate basis for claiming unforeseen extreme urgency under limited-tender rules.",
+    "tags": ["ANAO", "planning", "contract expiry", "limited tender", "extreme urgency"]
+  },
+  {
+    "id": "anao-contract-reporting",
+    "document": "ANAO Report No. 11 2022–23 — Australian Government Procurement Contract Reporting — 2022 Update",
+    "page": 9,
+    "url": "https://www.anao.gov.au/sites/default/files/2023-02/Auditor-General_Report_2022-23_11.pdf",
+    "section": "1. Background",
+    "content": "AusTender contract values represent total committed value over the contract duration, including GST, rather than actual expenditure. Actual spending remains in entity financial systems.",
+    "tags": ["ANAO", "AusTender", "committed value", "actual expenditure", "data caveat"]
+  },
+  {
+    "id": "anao-onesky-contract-management",
+    "document": "ANAO Report No. 46 2024–25 — Management of the OneSKY Contract",
+    "page": 22,
+    "url": "https://www.anao.gov.au/sites/default/files/2025-06/Auditor-General_Report_2024-25_46.pdf",
+    "section": "2. Governance arrangements",
+    "content": "Sound contract governance and risk management support value-for-money outcomes. A fit-for-purpose management plan should define accountability, identify performance issues and set out when contractual levers will be used.",
+    "tags": ["ANAO", "contract management", "governance", "performance", "value for money"]
+  }
+]

@@ -6,8 +6,20 @@ models:
     columns:
       - name: ocid
         tests: [not_null, unique]
-      - name: was_amended_up
+      - name: initial_release_id
         tests: [not_null]
+      - name: award_date
+        tests: [not_null]
+      - name: award_value_aud
+        tests: [not_null]
+      - name: was_amended_up
+        description: True only when an explicit contractAmendment release raises value above initial.
+        tests: [not_null]
+      - name: amendment_count
+        description: Count of OCDS releases explicitly tagged contractAmendment.
+        tests: [not_null]
+      - name: first_upward_amendment_date
+        description: First release timestamp at which contract value exceeded the initial value.
   - name: dim_agencies
     columns:
       - name: agency

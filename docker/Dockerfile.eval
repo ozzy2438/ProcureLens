@@ -1,0 +1,10 @@
+FROM python:3.12-slim
+WORKDIR /app
+COPY pyproject.toml README.md ./
+COPY src/procurelens/__init__.py ./src/procurelens/__init__.py
+RUN pip install --no-cache-dir ".[agent,evals]"
+COPY src ./src
+COPY config ./config
+COPY evals ./evals
+ENV PYTHONPATH=/app/src
+CMD ["python", "evals/run_evals.py", "--gate", "--output", "/app/artifacts/agent-eval.json", "--summary-output", "/app/artifacts/agent-eval.md"]

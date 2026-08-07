@@ -1,23 +1,63 @@
-name: Monthly retraining
+name: Monthly amendment-risk retraining
 
 on:
   schedule:
-    - cron: "0 19 1 * *"   # 1st of month, 05:00 AEST
+    - cron: "0 19 1 * *" # 2nd 05:00 AEST / 06:00 AEDT
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: amendment-risk-retraining
+  cancel-in-progress: false
 
 jobs:
   retrain:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-      - name: Install
-        run: pip install -e ".[ml]"
-      - name: Retrain and promote if better
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install ML and dbt dependencies
+        run: pip install -e ".[dev,ml,etl]"
+
+      - name: Build and validate immutable training snapshot
+        env:
+          DBT_HOST: ${{ secrets.DBT_HOST }}
+          DBT_PORT: ${{ secrets.DBT_PORT }}
+          DBT_USER: ${{ secrets.DBT_USER }}
+          DBT_PASSWORD: ${{ secrets.DBT_PASSWORD }}
+          DBT_DATABASE: ${{ secrets.DBT_DATABASE }}
+        run: dbt build --project-dir dbt --profiles-dir dbt
+
+      - name: Train challenger and apply guarded promotion policy
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
         run: |
-          python -m procurelens.models.train_amendment_risk --promote-if-better
+          mkdir -p .artifacts
+          python -m procurelens.models.train_amendment_risk \
+            --promote-if-better \
+            --max-ece 0.05 \
+            --metrics-output .artifacts/amendment-risk-metrics.json
+
+      - name: Write model metrics to workflow summary
+        if: always()
+        run: >-
+          python -m procurelens.models.workflow_summary
+          --metrics .artifacts/amendment-risk-metrics.json
+
+      - name: Upload retraining decision record
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: amendment-risk-retraining-${{ github.run_id }}
+          path: .artifacts/amendment-risk-metrics.json
+          if-no-files-found: ignore
+          retention-days: 90
