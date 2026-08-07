@@ -7,7 +7,9 @@ sources:
       - name: contract_notices
         description: Raw OCDS releases from the AusTender API (JSONB payload per release).
         columns:
-          - name: ocid
+          - name: release_id
             tests: [not_null, unique]
+          - name: ocid
+            tests: [not_null]
       - name: contract_notices_hist
         description: Historical CSV dumps from data.gov.au (1999+).

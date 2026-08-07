@@ -9,7 +9,7 @@
 ## Components
 
 ### 1. Data platform
-- `ingestion/ocds_client.py` pulls OCDS releases from the AusTender API into `raw.contract_notices` (JSONB, idempotent on `ocid`).
+- `ingestion/ocds_client.py` pulls OCDS releases from the AusTender API into `raw.contract_notices` (JSONB, idempotent on immutable release `id`; `ocid` is intentionally non-unique so amendments are retained).
 - `ingestion/load_historical.py` backfills 1999+ CSV dumps from data.gov.au.
 - dbt: `staging` flattens OCDS into typed views; `marts` builds `fct_contracts` (model training grain, amendment outcomes) and `dim_agencies` (spend aggregates). Data tests enforce uniqueness, nullability and value ranges.
 - Weekly GitHub Actions ingest keeps data fresh.

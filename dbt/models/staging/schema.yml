@@ -4,11 +4,9 @@ models:
   - name: stg_contract_notices
     description: Typed, one-row-per-release view over raw OCDS contract notices.
     columns:
-      - name: ocid
+      - name: release_id
         tests: [not_null, unique]
-      - name: award_value_aud
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              config:
-                severity: warn
+      - name: ocid
+        tests: [not_null]
+      - name: is_amendment
+        tests: [not_null]

@@ -74,7 +74,7 @@ procurelens/
 ```bash
 cp .env.example .env          # fill in secrets
 docker compose up -d db mlflow
-pip install -e ".[dev]"
+pip install -e ".[dev,ml,etl]"
 make ingest-sample            # small OCDS sample for local dev
 make dbt-build
 make train
@@ -102,8 +102,8 @@ make ui                       # http://localhost:8501
 ## Roadmap
 
 - [x] Week 1 — architecture, scaffold, ingestion + dbt models
-- [ ] Week 2 — EDA, features, amendment risk model v1, MLflow
-- [ ] Week 3 — calibration, SHAP, FastAPI service, retraining workflow, fit scorer
+- [x] Week 2 — EDA, features, amendment risk model v1, MLflow
+- [ ] Week 3 — FastAPI model service, retraining workflow, fit scorer
 - [ ] Week 4 — LangGraph agent (SQL/RAG/ML tools), Presidio guardrail, audit log
 - [ ] Week 5 — eval harness, Langfuse, CI eval gate, Docker Compose hardening
 - [ ] Week 6 — UI polish, live deploy, model card, assurance doc, demo video
