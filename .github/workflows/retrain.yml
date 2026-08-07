@@ -1,0 +1,23 @@
+name: Monthly retraining
+
+on:
+  schedule:
+    - cron: "0 19 1 * *"   # 1st of month, 05:00 AEST
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install -e ".[ml]"
+      - name: Retrain and promote if better
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: |
+          python -m procurelens.models.train_amendment_risk --promote-if-better

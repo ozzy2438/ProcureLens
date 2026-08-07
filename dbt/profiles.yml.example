@@ -1,0 +1,12 @@
+procurelens:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: procurelens
+      password: procurelens
+      dbname: procurelens
+      schema: analytics
+      threads: 4

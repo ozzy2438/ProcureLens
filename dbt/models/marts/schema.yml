@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: fct_contracts
+    description: Training grain for the amendment risk model.
+    columns:
+      - name: ocid
+        tests: [not_null, unique]
+      - name: was_amended_up
+        tests: [not_null]
+  - name: dim_agencies
+    columns:
+      - name: agency
+        tests: [not_null, unique]
