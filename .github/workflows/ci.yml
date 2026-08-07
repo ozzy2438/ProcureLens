@@ -61,4 +61,5 @@ jobs:
           name: agent-evaluation-${{ github.run_id }}
           path: .artifacts/agent-eval.*
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 90
