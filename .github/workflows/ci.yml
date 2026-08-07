@@ -25,6 +25,8 @@ jobs:
           pytest --cov=procurelens --cov-branch
           --cov-report=term-missing --cov-report=xml
           --cov-fail-under=80
+      - name: Prepare Compose environment
+        run: cp .env.example .env
       - name: Validate Docker Compose
         run: docker compose config --quiet
       - name: Build model API image
