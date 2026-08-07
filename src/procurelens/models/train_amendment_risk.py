@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import logging
 import re
@@ -17,6 +18,7 @@ from sqlalchemy import create_engine, text
 
 from procurelens.config import get_settings
 from procurelens.features.build_features import build_amendment_features
+from procurelens.models.registry import DEFAULT_MAX_ECE, promote_model_if_better
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,11 @@ NUMERIC_FEATURES = [
 MODEL_FEATURES = [*CATEGORICAL_FEATURES, *NUMERIC_FEATURES]
 
 
+def _xgboost_runtime_version() -> str:
+    """Return the exact version pinned for training and model serving."""
+    return importlib.metadata.version("xgboost")
+
+
 def _load_contracts(table_name: str) -> pd.DataFrame:
     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*", table_name):
         raise ValueError("feature table must be a schema-qualified SQL identifier")
@@ -58,7 +65,8 @@ def _load_contracts(table_name: str) -> pd.DataFrame:
 
 def _data_snapshot_hash(features: pd.DataFrame) -> str:
     columns = ["ocid", "award_date", "was_amended_up", *MODEL_FEATURES]
-    row_hashes = pd.util.hash_pandas_object(features[columns], index=False).values
+    canonical = features[columns].sort_values("ocid", kind="mergesort").reset_index(drop=True)
+    row_hashes = pd.util.hash_pandas_object(canonical, index=False).values
     return hashlib.sha256(row_hashes.tobytes()).hexdigest()
 
 
@@ -126,29 +134,13 @@ def _log_shap_plot(calibrated_model: Any, holdout: pd.DataFrame, artifact_dir: P
     plt.close()
 
 
-def _promote_when_better(client: Any, version: str, run_id: str, metrics: dict[str, float]) -> None:
-    """Assign the champion alias only when both ranking and calibration improve."""
-    try:
-        champion = client.get_model_version_by_alias(REGISTERED_MODEL, "champion")
-    except Exception:  # MLflow raises when the alias has not been created yet.
-        client.set_registered_model_alias(REGISTERED_MODEL, "champion", version)
-        return
-
-    champion_run = client.get_run(champion.run_id)
-    champion_metrics = champion_run.data.metrics
-    if metrics["holdout_auc_roc"] > champion_metrics.get("holdout_auc_roc", -np.inf) and metrics[
-        "holdout_brier_score"
-    ] < champion_metrics.get("holdout_brier_score", np.inf):
-        client.set_registered_model_alias(REGISTERED_MODEL, "champion", version)
-        logger.info("promoted run %s (version %s) to champion", run_id, version)
-
-
 def train(
     promote_if_better: bool = False,
     contracts: pd.DataFrame | None = None,
     tracking_uri: str | None = None,
     table_name: str | None = None,
-) -> dict[str, float]:
+    max_ece: float = DEFAULT_MAX_ECE,
+) -> dict[str, Any]:
     """Train on awards through 2023 and evaluate once on the 2024+ holdout."""
     import mlflow
     import mlflow.sklearn
@@ -163,6 +155,7 @@ def train(
     from xgboost import XGBClassifier
 
     settings = get_settings()
+    xgboost_version = _xgboost_runtime_version()
     source_table = table_name or settings.amendment_feature_table
     contracts = _load_contracts(source_table) if contracts is None else contracts.copy()
     features = build_amendment_features(contracts)
@@ -275,11 +268,14 @@ def train(
                     "learning_rate": 0.05,
                     "scale_pos_weight": scale_pos_weight,
                     "data_snapshot_sha256": split_summary["data_snapshot_sha256"],
+                    "xgboost_version": xgboost_version,
                 }
             )
             mlflow.log_metrics(metrics)
             mlflow.log_artifacts(str(artifact_dir), artifact_path="evaluation")
-            signature = infer_signature(x_holdout.head(20), probabilities[:20])
+            signature = infer_signature(
+                x_holdout.head(20), calibrated_model.predict_proba(x_holdout.head(20))
+            )
             model_info = mlflow.sklearn.log_model(
                 sk_model=calibrated_model,
                 artifact_path="model",
@@ -287,16 +283,41 @@ def train(
                 registered_model_name=REGISTERED_MODEL,
                 signature=signature,
                 input_example=x_holdout.head(5),
+                pyfunc_predict_fn="predict_proba",
+                extra_pip_requirements=[f"xgboost=={xgboost_version}"],
+                metadata={"xgboost_version": xgboost_version},
             )
             run_id = run.info.run_id
 
     logger.info("holdout metrics: %s", metrics)
+    version = getattr(model_info, "registered_model_version", None)
+    if version is None:
+        raise RuntimeError("MLflow did not return a registered model version")
+    client = MlflowClient()
+    client.set_registered_model_alias(REGISTERED_MODEL, "challenger", str(version))
+    decision = None
     if promote_if_better:
-        version = getattr(model_info, "registered_model_version", None)
-        if version is None:
-            raise RuntimeError("MLflow did not return a registered model version")
-        _promote_when_better(MlflowClient(), str(version), run_id, metrics)
-    return metrics
+        decision = promote_model_if_better(
+            client,
+            model_name=REGISTERED_MODEL,
+            challenger_version=str(version),
+            challenger_run_id=run_id,
+            challenger_metrics=metrics,
+            max_ece=max_ece,
+        )
+        logger.info("promotion decision for version %s: %s", version, decision.reason)
+    return {
+        **metrics,
+        "run_id": run_id,
+        "registered_model_version": str(version),
+        "data_snapshot_sha256": split_summary["data_snapshot_sha256"],
+        "train_rows": split_summary["train_rows"],
+        "holdout_rows": split_summary["holdout_rows"],
+        "promotion_evaluated": promote_if_better,
+        "promotion_accepted": decision.accepted if decision else None,
+        "promotion_reason": decision.reason if decision else "not requested",
+        "xgboost_version": xgboost_version,
+    }
 
 
 if __name__ == "__main__":
@@ -304,10 +325,16 @@ if __name__ == "__main__":
     parser.add_argument("--promote-if-better", action="store_true")
     parser.add_argument("--tracking-uri", default=None)
     parser.add_argument("--table", default=None)
+    parser.add_argument("--max-ece", type=float, default=DEFAULT_MAX_ECE)
+    parser.add_argument("--metrics-output", default=None)
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO)
-    train(
+    result = train(
         promote_if_better=args.promote_if_better,
         tracking_uri=args.tracking_uri,
         table_name=args.table,
+        max_ece=args.max_ece,
     )
+    if args.metrics_output:
+        Path(args.metrics_output).write_text(json.dumps(result, indent=2), encoding="utf-8")
+    print(json.dumps(result, indent=2))

@@ -12,36 +12,51 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
       - name: Install
-        run: pip install -e ".[dev]"
+        run: pip install -e ".[dev,ml,agent,evals]"
       - name: Lint
         run: ruff check src tests
       - name: Type check
-        run: mypy src || true  # advisory until Week 3 hardening
+        run: mypy src
       - name: Tests
-        run: pytest --cov=procurelens
+        run: >-
+          pytest --cov=procurelens --cov-branch
+          --cov-report=term-missing --cov-report=xml
+          --cov-fail-under=80
+      - name: Validate Docker Compose
+        run: docker compose config --quiet
+      - name: Build model API image
+        run: docker build -f docker/Dockerfile.api -t procurelens-api:ci .
+      - name: Build Streamlit image
+        run: docker build -f docker/Dockerfile.ui -t procurelens-ui:ci .
+      - name: Build evaluation image
+        run: docker build -f docker/Dockerfile.eval -t procurelens-eval:ci .
 
   eval-gate:
-    # LLM eval gate: blocks merge if groundedness / SQL accuracy fall below thresholds.
-    # Runs only when an API key secret is configured (skipped on forks).
+    # Deterministic gate always runs: no external LLM key or service is required.
     runs-on: ubuntu-latest
     needs: quality
-    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: pip
       - name: Run evals
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          if [ -z "$OPENAI_API_KEY" ]; then
-            echo "No API key configured - skipping eval gate."
-            exit 0
-          fi
-          pip install -e ".[evals,agent]"
-          python evals/run_evals.py --gate
+          pip install -e ".[agent,evals]"
+          mkdir -p .artifacts
+          python evals/run_evals.py --gate \
+            --output .artifacts/agent-eval.json \
+            --summary-output .artifacts/agent-eval.md
+          cat .artifacts/agent-eval.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload evaluation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-evaluation-${{ github.run_id }}
+          path: .artifacts/agent-eval.*
+          if-no-files-found: error
+          retention-days: 90

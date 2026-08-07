@@ -1,0 +1,74 @@
+version: "1.0.0"
+name: "ProcureLens boutique AI advisory profile"
+description: >-
+  Illustrative capability profile for ranking Commonwealth opportunities. It is
+  not a learned win-probability model and must be reviewed for each real firm.
+
+target_unspsc_segments:
+  - "43"  # information technology hardware and accessories
+  - "80"  # management, business and administrative services
+  - "81"  # engineering and research services
+  - "86"  # education and training services
+
+capability_keywords:
+  artificial_intelligence:
+    - "artificial intelligence"
+    - "responsible ai"
+    - "ai assurance"
+    - "genai"
+    - "generative ai"
+  data_science:
+    - "data science"
+    - "predictive analytics"
+    - "machine learning"
+    - "statistical modelling"
+  ml_engineering:
+    - "ml engineering"
+    - "mlops"
+    - "model monitoring"
+    - "model deployment"
+  data_platforms:
+    - "data platform"
+    - "data engineering"
+    - "data warehouse"
+    - "data governance"
+  government_advisory:
+    - "government advisory"
+    - "digital transformation"
+    - "procurement analytics"
+    - "public sector"
+
+target_contract_value_aud:
+  floor: 50000
+  preferred_min: 150000
+  preferred_max: 5000000
+  ceiling: 20000000
+
+firm_supplier_names:
+  - "ProcureLens Advisory Pty Ltd"
+
+procurement_method_scores:
+  open: 1.0
+  panel: 0.85
+  prequalified: 0.75
+  selective: 0.65
+  limited: 0.30
+
+normalisation:
+  keyword_match_target: 4
+  tech_spend_reference_aud: 100000000
+  familiarity_contracts: 3
+
+weights:
+  category_match: 0.22
+  keyword_match: 0.20
+  agency_tech_spend: 0.12
+  value_fit: 0.15
+  agency_familiarity: 0.12
+  supplier_diversity: 0.08
+  procurement_access: 0.06
+  lead_time: 0.05
+
+score_bands:
+  strong_fit: 70
+  review: 40

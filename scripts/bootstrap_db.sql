@@ -1,6 +1,7 @@
 -- Initial schemas + release-grain raw storage + read-only role for the agent SQL tool.
 create schema if not exists raw;
 create schema if not exists analytics;
+create schema if not exists analytics_marts;
 
 create table if not exists raw.contract_notices (
     release_id  text primary key,
@@ -24,3 +25,10 @@ begin
         create role agent_readonly login password 'change-me';
     end if;
 end $$;
+
+alter role agent_readonly set default_transaction_read_only = on;
+grant connect on database procurelens to agent_readonly;
+grant usage on schema analytics_marts to agent_readonly;
+grant select on all tables in schema analytics_marts to agent_readonly;
+alter default privileges for role procurelens in schema analytics_marts
+    grant select on tables to agent_readonly;

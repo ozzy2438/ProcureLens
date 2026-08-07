@@ -3,24 +3,35 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: procurelens
-      POSTGRES_PASSWORD: procurelens
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-procurelens}
       POSTGRES_DB: procurelens
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./scripts/bootstrap_db.sql:/docker-entrypoint-initdb.d/bootstrap_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U procurelens -d procurelens"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:v2.12.1
+    image: ghcr.io/mlflow/mlflow:v3.15.1
     command: >-
       mlflow server --host 0.0.0.0 --port 5000
       --backend-store-uri sqlite:////mlflow/mlflow.db
-      --default-artifact-root /mlflow/artifacts
+      --serve-artifacts --artifacts-destination /mlflow/artifacts
+      --allowed-hosts mlflow:5000,localhost:5000,127.0.0.1:5000,localhost:5050,127.0.0.1:5050
     ports:
-      - "5000:5000"
+      - "${MLFLOW_PORT:-5050}:5000"
     volumes:
       - ./mlruns:/mlflow
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   api:
     build:
@@ -28,20 +39,91 @@ services:
       dockerfile: docker/Dockerfile.api
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg2://procurelens:procurelens@db:5432/procurelens
+      DATABASE_URL: postgresql+psycopg2://procurelens:${POSTGRES_PASSWORD:-procurelens}@db:5432/procurelens
       MLFLOW_TRACKING_URI: http://mlflow:5000
-    depends_on: [db, mlflow]
+      MODEL_SERVICE_URL: http://127.0.0.1:8000
+      AGENT_DATABASE_URL: postgresql+psycopg2://agent_readonly:${AGENT_DB_PASSWORD:-change-me}@db:5432/procurelens
+      RAG_CORPUS_PATH: config/rag_corpus.json
+      AUDIT_LOG_PATH: logs/audit.jsonl
+      RELEASE_VERSION: ${RELEASE_VERSION:-1.0.0}
+      SNAPSHOT_VERSION: ${SNAPSHOT_VERSION:-1.0.0}
+    depends_on:
+      db:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
 
   ui:
     build:
       context: .
       dockerfile: docker/Dockerfile.ui
     env_file: .env
-    depends_on: [api]
+    environment:
+      PROCURELENS_API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
     ports:
-      - "8501:8501"
+      - "${UI_PORT:-8501}:8501"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  snapshot-restore:
+    profiles: ["demo"]
+    image: postgres:16
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGUSER: procurelens
+      PGPASSWORD: ${POSTGRES_PASSWORD:-procurelens}
+      PGDATABASE: procurelens
+      AGENT_DB_PASSWORD: ${AGENT_DB_PASSWORD:-change-me}
+      SNAPSHOT_PATH: /snapshot/procurelens-marts-v1.0.0.dump
+      SNAPSHOT_CHECKSUM_PATH: /snapshot/procurelens-marts-v1.0.0.dump.sha256
+      SNAPSHOT_EXPECTED_ROWS: 445029
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./scripts/restore_snapshot.sh:/scripts/restore_snapshot.sh:ro
+      - ./data/snapshots:/snapshot:ro
+    command: ["bash", "/scripts/restore_snapshot.sh"]
+
+  eval:
+    profiles: ["quality"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.eval
+    volumes:
+      - ./artifacts:/app/artifacts
+
+  monitoring-smoke:
+    profiles: ["quality"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.eval
+    command:
+      - python
+      - -m
+      - procurelens.monitoring.smoke
+      - --output-dir
+      - /app/artifacts/monitoring-smoke
+    volumes:
+      - ./artifacts:/app/artifacts
 
 volumes:
   pgdata:

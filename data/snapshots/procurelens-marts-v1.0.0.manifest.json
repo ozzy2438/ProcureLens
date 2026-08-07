@@ -1,0 +1,17 @@
+{
+  "release_version": "1.0.0",
+  "snapshot_version": "1.0.0",
+  "created_at": "2026-08-07T22:53:19+10:00",
+  "source": "AusTender OCDS releases modelled through ProcureLens dbt marts",
+  "contract_rows": 445029,
+  "agency_rows": 151,
+  "archive_bytes": 43516988,
+  "sha256": "07546116dc514c12ef63cc3bbd35e30c1d30a9464f8c71431c56ebbfb3dd7f40",
+  "postgres_major_version": 16,
+  "privacy": {
+    "supplier_identifiers": "deterministically pseudonymised",
+    "supplier_names": "replaced with stable synthetic labels",
+    "contract_descriptions": "replaced with UNSPSC category descriptions",
+    "raw_release_payloads_included": false
+  }
+}
