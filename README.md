@@ -2,11 +2,22 @@
 
 **Federal Procurement Intelligence & Bid Agent Platform**
 
+<p align="center">
+  <a href="https://github.com/ozzy2438/ProcureLens/releases/download/v1.0.0/PROCURELENS_PROFESSIONAL_DEMO.mp4">
+    <img src="docs/assets/procurelens-demo-poster.jpg" alt="Watch the ProcureLens professional product tour" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <strong>▶ Watch the 2:47 professional product tour — narrated, captioned and presented in a Windows application frame</strong>
+</p>
+
 Production-grade ML and agentic AI over Australian Government procurement data (AusTender).
 Built as a contract-style engagement for a boutique advisory firm targeting federal work.
 
-> Release candidate: **v1.0.0** — deterministic local demo and compile-validated Azure deployment
-> configuration. No hosted environment is implied.
+> **v1.0.0** — deterministic local demo plus an ephemeral Azure acceptance deployment that passed
+> production-path smoke tests. Paid resources were removed after verification; see the
+> [deployment record](docs/portfolio/azure_deployment_record.md).
 
 ## What it does
 
