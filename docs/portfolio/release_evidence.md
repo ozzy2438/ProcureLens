@@ -1,6 +1,7 @@
 # ProcureLens v1.0.0 Release Evidence
 
-Validated locally on 7 August 2026. This is release-candidate evidence, not a deployment record.
+Validated locally on 7 August 2026. The immutable release was subsequently deployed and smoke-tested
+on Azure on 8 August 2026; see [Azure deployment record](azure_deployment_record.md).
 
 ## Quality gates
 
@@ -91,8 +92,9 @@ ABN/TFN and full eval regressions pass.
 
 ## Approval boundary and known risks
 
-- Azure configuration is compile-validated but was not deployed; no subscription-specific
-  `what-if`, private networking or managed-service integration was attempted.
+- The v1.0.0 artefact was deployed to an ephemeral, VNet-connected Azure Container Apps environment,
+  verified against managed PostgreSQL and removed after acceptance testing to bound pay-as-you-go
+  cost. The temporary URL is intentionally no longer a persistent service.
 - The feed uses curated and visibly labelled demo scenarios, not current live opportunities.
 - The deterministic corpus is deliberately narrow; source currency requires operational ownership.
 - Recent amendment outcomes remain right-censored, as documented in the model card.
