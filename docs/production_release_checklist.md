@@ -1,6 +1,6 @@
 # ProcureLens v1.0.0 Production Release Checklist
 
-This checklist is evidence for a release candidate; it does not authorise deployment.
+This checklist records the v1.0.0 release and its ephemeral Azure acceptance deployment.
 
 ## Scope and integrity
 
@@ -9,7 +9,7 @@ This checklist is evidence for a release candidate; it does not authorise deploy
 - [x] Snapshot archive checksum is verified before every restore.
 - [x] Supplier identifiers/names are pseudonymised and raw releases are excluded.
 - [x] Curated opportunities are labelled as demo scenarios, not live tenders.
-- [x] No commit, push, PR or deployment is part of this release preparation.
+- [x] The release tag remains immutable; post-release deployment evidence is recorded separately.
 
 ## Product flows
 
@@ -43,13 +43,18 @@ This checklist is evidence for a release candidate; it does not authorise deploy
 - [x] UI screenshots have been captured from the release candidate.
 - [x] Secret/PII/local-path audit passes.
 
-The unchecked verification items are filled with the final command evidence in
-`docs/portfolio/release_evidence.md`; do not mark them complete based only on expected results.
+Command outputs and exact metrics supporting these checks are recorded in
+`docs/portfolio/release_evidence.md`.
 
-## Deployment approval boundary
+## Deployment acceptance
 
 - [x] Immutable image tags, probes, managed identities and multiple revisions are configured.
 - [x] Secrets and rollback procedures are documented.
-- [ ] Human release owner approves deployment parameters and target subscription.
-- [ ] Human security/privacy owner approves production data and observability destinations.
-- [ ] Deployment and traffic shift are executed outside this local-preparation task.
+- [x] Human release owner approved the target subscription and a USD 2–3 maximum spend.
+- [x] The distributed snapshot remained pseudonymised; external LLM and Langfuse export were disabled.
+- [x] Azure deployment, managed-data restore, API/UI smoke and failure-path checks passed.
+- [x] Paid Azure resources were confirmed removed after visual acceptance; group metadata deletion
+  was still completing asynchronously.
+
+Detailed operational evidence is in
+[`docs/portfolio/azure_deployment_record.md`](portfolio/azure_deployment_record.md).
